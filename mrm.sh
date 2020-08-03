@@ -106,7 +106,18 @@ del() {
 }
 
 list() {
-	ls "$MODULES_DIR"
+	for module in `ls $MODULES_DIR`
+	do
+		# Show module description if available
+		if [[ -f "$MODULES_DIR/$module/module.prop" ]]
+		then
+			local desc=`cat $MODULES_DIR/$module/module.prop |
+				grep "description=" | sed "s/description=//"`
+			echo -e "$module :: $desc"
+		else
+			echo "$module"
+		fi
+	done
 }
 
 # Check for root permissions
