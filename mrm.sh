@@ -50,6 +50,8 @@ add() {
 	# Parse input and separate
 	local author=`echo "$1" | cut -d ":" -f1`
 	local name=`echo "$1" | cut -d ":" -f2`
+	[[ -z "$author" ]] && err "Author not specified. Exiting."
+	[[ -z "$name" ]] && err "Name not specified. Exiting."
 	dbg "Author: $author"
 	dbg "Name: $name"
 
@@ -58,6 +60,7 @@ add() {
 
 	# Fetch the archive
 	local url="https://github.com/$author/$name/archive/master.tar.gz"
+	! curl -Lsfo /dev/null "$url" && err "Invalid URL specified. Exiting."
 	dbg "Fetching archive from $url."
 	curl -L -s -o "$MODULES_DIR/tmp.tar.gz" "$url"	
 
@@ -93,6 +96,8 @@ del() {
 	# Parse input and separate
 	local author=`echo "$1" | cut -d ":" -f1`
 	local name=`echo "$1" | cut -d ":" -f2`
+	[[ -z "$author" ]] && err "Author not specified. Exiting."
+	[[ -z "$name" ]] && err "Name not specified. Exiting."
 	dbg "Author: $author"
 	dbg "Name: $name"
 
