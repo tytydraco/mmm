@@ -8,8 +8,6 @@ set -e
 DATA_DIR="/data/local/mrm"
 REPOLIST="$DATA_DIR/repolist"
 DEBUG=1
-COMMAND="$1"
-ARGUMENTS="${@:2}"
 
 # Log in red and exit
 err() {
@@ -63,4 +61,5 @@ command_handler() {
 	esac
 }
 
-command_handler "$COMMAND" "$ARGUMENTS"
+# Pass command line command and arguments
+command_handler "$1" "${@:2}"
