@@ -60,10 +60,28 @@ sanity() {
 	fi
 }
 
+_add-repo() {
+	# Bail if multi-word or multi-line
+	[[ `echo "$1" | wc -w` -ne 1 ]] && err "Invalid URL format: $1. Exiting."
+
+	# Bail if entry already exists
+	if `cat "$REPOLIST" | grep -q -x "$1"`
+	then
+		warn "Repository $1 already exists in the repolist."
+		return 1
+	fi
+
+	# Add entry to the repolist
+	echo "$1" >> "$REPOLIST"
+
+	dbg "Added $1 to the repolist."
+}
+
 # Handle commands and arguments passed
 command_handler() {
 	case "$1" in
 		"add-repo")
+			_add-repo "$2"
 			;;
 		"del-repo")
 			;;
