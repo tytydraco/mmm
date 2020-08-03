@@ -1,13 +1,9 @@
 #!/bin/bash
 # Written by Draco (tytydraco @ GitHub)
 
-# Exit on errors
-set -e
-
-# Declarations
-DATA_DIR="/data/local/mrm"
-REPOLIST="$DATA_DIR/repolist"
+# Constants
 DEBUG=1
+MODULES_DIR="/sbin/.magisk/modules"
 
 # Add busybox components from Magisk
 [[ -d "/sbin/.magisk/busybox" ]] && [[ "$PATH" != *"/sbin/.magisk/busybox"* ]] &&
@@ -26,120 +22,96 @@ warn() {
 
 # Log in white and continue (unnecessary)
 dbg() {
-	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@" || true
+	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@"
 }
 
 # Log in white and continue (necessary)
 log() {
-	echo -e "[*] $@" || true
+	echo -e "[*] $@"
 }
 
 # Print MRM command list and syntax
 usage() {
 	echo -n "Usage: `basename $0` <COMMAND> [ARGUMENTS]
 Options:
-  add-repo URL		Add repository to the repolist
-  del-repo URL		Delete a repository from the repolist
-  ls-repo		List all existing repolist entries
-  install NAME		Install a module from the repolist
-  update		Update all repository listings
+  add AUTHOR:NAME	Install module from author
+  del NAME		Remove installed module
+  upgrade NAME		Upgrade an existing module
+  list			List all installed modules
   help			Show usage
 "
 }
 
-# Sanity check of directory structure
-sanity() {
-	# Check for root permissions
-	[[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
+add() {
+	# Bail if invalid format
+	[[ "$1" != *":"* ]] &&
+		err "Module must be in AUTHOR:NAME format. Exiting."
 
-	if [[ ! -d "$DATA_DIR" ]]
-	then
-		warn "Data directory non-existent at $DATA_DIR. Creating one."
-		mkdir -p "$DATA_DIR"
-	fi
+	# Parse input and separate
+	local author=`echo "$1" | cut -d ":" -f1`
+	local name=`echo "$1" | cut -d ":" -f2`
+	dbg "Author: $author"
+	dbg "Name: $name"
 
-	if [[ ! -f "$REPOLIST" ]]
-	then
-		warn "Repolist non-existent at $REPOLIST. Creating one."
-		touch "$REPOLIST"
-	fi
+	# Bail if module already exists
+	[[ -d "$MODULES_DIR/$author:$name" ]] && err "Module already exists. Exiting."
+
+	# Fetch the archive
+	local url="https://github.com/$author/$name/archive/master.tar.gz"
+	dbg "Fetching archive from $url."
+	curl -L -s -o "$MODULES_DIR/tmp.tar.gz" "$url"	
+
+	# Check for curl success
+	[[ $? -ne 0 ]] && err "Failed to fetch archive from $url. Exiting."
+
+	# Prepare for extraction
+	mkdir "$MODULES_DIR/tmp"
+
+	# Extract
+	dbg "Extracting archive."
+	tar xf "$MODULES_DIR/tmp.tar.gz" -C "$MODULES_DIR/tmp"
+
+	# Rename with MRM folder structure
+	dbg "Moving contents to MRM folder structure."
+	local dirname=`ls "$MODULES_DIR/tmp"`
+	mv "$MODULES_DIR/tmp/$dirname" "$MODULES_DIR"
+	mv "$MODULES_DIR/$dirname" "$MODULES_DIR/$author:$name"
+
+	# Cleanup
+	dbg "Cleaning up."
+	rm "$MODULES_DIR/tmp.tar.gz"
+	rm -rf "$MODULES_DIR/tmp"
+
+	dbg "Installed $author:$name."
 }
 
-_add-repo() {
-	# Bail if multi-word or multi-line
-	[[ `echo "$1" | wc -w` -ne 1 ]] &&
-		err "Invalid URL format: $1. Exiting."
+# Check for root permissions
+[[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
 
-	# Bail if entry already exists
-	`cat "$REPOLIST" | grep -q -x "$1"` &&
-		err "Repository $1 already exists in the repolist."
-
-	# Add entry to the repolist
-	echo "$1" >> "$REPOLIST"
-
-	dbg "Added $1 to the repolist."
-}
-
-_del-repo() {
-	# Bail if multi-word or multi-line
-	[[ `echo "$1" | wc -w` -ne 1 ]] &&
-		err "Invalid URL format: $1. Exiting."
-
-	# Bail if entry does not exists
-	! `cat "$REPOLIST" | grep -q -x "$1"` &&
-		err "Repository $1 does not exist in the repolist."
-
-	# Remove entry from the repolist
-	sed -i "/^$1\$/d" "$REPOLIST"
-
-	dbg "Deleted $1 to the repolist."
-}
-
-_ls-repo() {
-	local repolist_ents=`cat "$REPOLIST"`
-
-	# Warn if the repo list is empty
-	if [[ -z "$repolist_ents" ]]
-	then
-		dbg "Repolist is empty."
-		return 0
-	fi
-
-	echo "$repolist_ents"
-}
+# Ensure modules folder exists
+[[ ! -d "$MODULES_DIR" ]] &&
+	err "No modules directory found at $MODULES_DIR. Exiting."
 
 # Handle commands and arguments passed
-command_handler() {
-	# Perform sanity check before each command
-	sanity
-
-	case "$1" in
-		"add-repo")
-			_add-repo "$2"
-			;;
-		"del-repo")
-			_del-repo "$2"
-			;;
-		"ls-repo")
-			_ls-repo
-			;;
-		"install")
-			;;
-		"update")
-			;;
-		"help")
-			usage
-			exit 0
-			;;
-		"")
-			usage
-			exit 0
-			;;
-		*)
-			err "Unknown command: $1. Exiting."
-			;;
-	esac
-}
-
-# Pass command line command and arguments
-command_handler "$1" "${@:2}"
+case "$1" in
+	"add")
+		add "$2"
+		;;
+	"del")
+		;;
+	"list")
+		;;
+	"upgrade")
+		;;
+	"help")
+		usage
+		exit 0
+		;;
+	"")
+		usage
+		exit 0
+		;;
+	*)
+		err "Unknown command: $1. Exiting."
+		;;
+esac
