@@ -9,6 +9,10 @@ DATA_DIR="/data/local/mrm"
 REPOLIST="$DATA_DIR/repolist"
 DEBUG=1
 
+# Add busybox components from Magisk
+[[ -d "/sbin/.magisk/busybox" ]] && [[ "$PATH" != *"/sbin/.magisk/busybox"* ]] &&
+	export PATH="$PATH:/sbin/.magisk/busybox"
+
 # Log in red and exit
 err() {
 	echo -e "\e[91m[!] $@\e[39m"
