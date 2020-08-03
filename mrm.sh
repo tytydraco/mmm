@@ -38,6 +38,21 @@ Options:
 "
 }
 
+# Sanity check of directory structure
+sanity() {
+	if [[ ! -d "$DATA_DIR" ]]
+	then
+		warn "Data directory non-existent at $DATA_DIR. Creating one."
+		mkdir -p "$DATA_DIR"
+	fi
+
+	if [[ ! -f "$REPOLIST" ]]
+	then
+		warn "Repolist non-existent at $REPOLIST. Creating one."
+		touch "$REPOLIST"
+	fi
+}
+
 # Handle commands and arguments passed
 command_handler() {
 	case "$1" in
@@ -60,6 +75,9 @@ command_handler() {
 			;;
 	esac
 }
+
+# Perform initial sanity check
+sanity
 
 # Pass command line command and arguments
 command_handler "$1" "${@:2}"
