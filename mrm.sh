@@ -110,6 +110,9 @@ _ls-repo() {
 
 # Handle commands and arguments passed
 command_handler() {
+	# Perform sanity check before each command
+	sanity
+
 	case "$1" in
 		"add-repo")
 			_add-repo "$2"
@@ -137,9 +140,6 @@ command_handler() {
 			;;
 	esac
 }
-
-# Perform initial sanity check
-sanity
 
 # Pass command line command and arguments
 command_handler "$1" "${@:2}"
