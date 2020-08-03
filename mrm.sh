@@ -35,7 +35,7 @@ usage() {
 	echo -n "Usage: `basename $0` <COMMAND> [ARGUMENTS]
 Options:
   add AUTHOR:NAME	Install module from author
-  del NAME		Remove installed module
+  del NAME		Delete installed module
   upgrade NAME		Upgrade an existing module
   list			List all installed modules
   help			Show usage
@@ -85,6 +85,26 @@ add() {
 	dbg "Installed $author:$name."
 }
 
+del() {
+	# Bail if invalid format
+	[[ "$1" != *":"* ]] &&
+		err "Module must be in AUTHOR:NAME format. Exiting."
+
+	# Parse input and separate
+	local author=`echo "$1" | cut -d ":" -f1`
+	local name=`echo "$1" | cut -d ":" -f2`
+	dbg "Author: $author"
+	dbg "Name: $name"
+
+	# Bail if module does not exist
+	[[ ! -d "$MODULES_DIR/$author:$name" ]] && err "Module does not exist exists. Exiting."
+
+	dbg "Deleting module."
+	rm -rf "$MODULES_DIR/$author:$name"
+
+	dbg "Deleted $author:$name."
+}
+
 # Check for root permissions
 [[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
 
@@ -98,6 +118,7 @@ case "$1" in
 		add "$2"
 		;;
 	"del")
+		del "$2"
 		;;
 	"list")
 		;;
