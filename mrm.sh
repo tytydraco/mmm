@@ -105,6 +105,10 @@ del() {
 	dbg "Deleted $author:$name."
 }
 
+list() {
+	ls "$MODULES_DIR"
+}
+
 # Check for root permissions
 [[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
 
@@ -121,6 +125,7 @@ case "$1" in
 		del "$2"
 		;;
 	"list")
+		list
 		;;
 	"upgrade")
 		;;
