@@ -62,19 +62,32 @@ sanity() {
 
 _add-repo() {
 	# Bail if multi-word or multi-line
-	[[ `echo "$1" | wc -w` -ne 1 ]] && err "Invalid URL format: $1. Exiting."
+	[[ `echo "$1" | wc -w` -ne 1 ]] &&
+		err "Invalid URL format: $1. Exiting."
 
 	# Bail if entry already exists
-	if `cat "$REPOLIST" | grep -q -x "$1"`
-	then
-		warn "Repository $1 already exists in the repolist."
-		return 1
-	fi
+	`cat "$REPOLIST" | grep -q -x "$1"` &&
+		err "Repository $1 already exists in the repolist."
 
 	# Add entry to the repolist
 	echo "$1" >> "$REPOLIST"
 
 	dbg "Added $1 to the repolist."
+}
+
+_del-repo() {
+	# Bail if multi-word or multi-line
+	[[ `echo "$1" | wc -w` -ne 1 ]] &&
+		err "Invalid URL format: $1. Exiting."
+
+	# Bail if entry does not exists
+	! `cat "$REPOLIST" | grep -q -x "$1"` &&
+		err "Repository $1 does not exist in the repolist."
+
+	# Remove entry from the repolist
+	sed -i "/^$1\$/d" "$REPOLIST"
+
+	dbg "Deleted $1 to the repolist."
 }
 
 # Handle commands and arguments passed
@@ -84,6 +97,7 @@ command_handler() {
 			_add-repo "$2"
 			;;
 		"del-repo")
+			_del-repo "$2"
 			;;
 		"ls-repo")
 			;;
