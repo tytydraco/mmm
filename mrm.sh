@@ -124,10 +124,12 @@ case "$1" in
 	"del")
 		del "$2"
 		;;
+	"upgrade")
+		del "$2"
+		add "$2"
+		;;
 	"list")
 		list
-		;;
-	"upgrade")
 		;;
 	"help")
 		usage
