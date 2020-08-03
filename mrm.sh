@@ -77,6 +77,10 @@ command_handler() {
 			usage
 			exit 0
 			;;
+		"")
+			usage
+			exit 0
+			;;
 		*)
 			err "Unknown command: $1. Exiting."
 			;;
