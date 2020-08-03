@@ -24,9 +24,14 @@ warn() {
 	echo -e "\e[93m[#] $@\e[39m"
 }
 
-# Log in white and continue
+# Log in white and continue (unnecessary)
 dbg() {
 	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@" || true
+}
+
+# Log in white and continue (necessary)
+log() {
+	echo -e "[*] $@" || true
 }
 
 # Print MRM command list and syntax
@@ -90,6 +95,19 @@ _del-repo() {
 	dbg "Deleted $1 to the repolist."
 }
 
+_ls-repo() {
+	local repolist_ents=`cat "$REPOLIST"`
+
+	# Warn if the repo list is empty
+	if [[ -z "$repolist_ents" ]]
+	then
+		dbg "Repolist is empty."
+		return 0
+	fi
+
+	echo "$repolist_ents"
+}
+
 # Handle commands and arguments passed
 command_handler() {
 	case "$1" in
@@ -100,6 +118,7 @@ command_handler() {
 			_del-repo "$2"
 			;;
 		"ls-repo")
+			_ls-repo
 			;;
 		"install")
 			;;
