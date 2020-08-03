@@ -44,6 +44,9 @@ Options:
 
 # Sanity check of directory structure
 sanity() {
+	# Check for root permissions
+	[[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
+
 	if [[ ! -d "$DATA_DIR" ]]
 	then
 		warn "Data directory non-existent at $DATA_DIR. Creating one."
