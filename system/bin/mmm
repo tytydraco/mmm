@@ -26,7 +26,7 @@ dbg() {
 	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@"
 }
 
-# Print MRM command list and syntax
+# Print mmm command list and syntax
 usage() {
 	echo -n "Usage: `basename $0` <COMMAND> [ARGUMENTS]
 Options:
@@ -68,8 +68,8 @@ add() {
 	dbg "Extracting archive."
 	tar xf "$MODULES_DIR/tmp.tar.gz" -C "$MODULES_DIR/tmp"
 
-	# Rename with MRM folder structure
-	dbg "Moving contents to MRM folder structure."
+	# Rename with mmm folder structure
+	dbg "Moving contents to mmm folder structure."
 	local dirname=`ls "$MODULES_DIR/tmp"`
 	mv "$MODULES_DIR/tmp/$dirname" "$MODULES_DIR"
 	mv "$MODULES_DIR/$dirname" "$MODULES_DIR/$author:$name"
