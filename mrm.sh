@@ -9,6 +9,12 @@ MODULES_DIR="/sbin/.magisk/modules"
 [[ -d "/sbin/.magisk/busybox" ]] && [[ "$PATH" != *"/sbin/.magisk/busybox"* ]] &&
 	export PATH="$PATH:/sbin/.magisk/busybox"
 
+# Check for required dependencies
+for dep in basename curl cut grep id mv rm tar
+do
+	! command -v "$dep" &> /dev/null && err "Unable to locate dependency $dep. Exiting."
+done
+
 # Log in red and exit
 err() {
 	echo -e "\e[91m[!] $@\e[39m"
