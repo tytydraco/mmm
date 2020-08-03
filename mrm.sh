@@ -15,19 +15,9 @@ err() {
 	exit 1
 }
 
-# Log in red and continue
-warn() {
-	echo -e "\e[93m[#] $@\e[39m"
-}
-
 # Log in white and continue (unnecessary)
 dbg() {
 	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@"
-}
-
-# Log in white and continue (necessary)
-log() {
-	echo -e "[*] $@"
 }
 
 # Print MRM command list and syntax
