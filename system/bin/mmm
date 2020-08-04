@@ -79,6 +79,18 @@ add() {
 	rm "$MODULES_DIR/tmp.tar.gz"
 	rm -rf "$MODULES_DIR/tmp"
 
+	# Customize script
+	dbg "Setting up environment for customize.sh."
+	. /data/adb/magisk/util_functions.sh
+	api_level_arch_detect
+	BOOTMODE="false"
+	MODPATH="$MODULES_DIR/$author:$name"
+	TMPDIR=/dev/tmp
+	ZIPFILE=
+
+	dbg "Sourcing customize.sh."
+	[[ -f $MODPATH/customize.sh ]] && . "$MODPATH/customize.sh"
+
 	dbg "Installed $author:$name."
 }
 
