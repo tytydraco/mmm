@@ -52,44 +52,35 @@ add() {
 	# Bail if module already exists
 	[[ -d "$MODULES_DIR/$author:$name" ]] && err "Module already exists. Exiting."
 
-	# Fetch the archive
+	# Fetch the archive	
 	local url="https://github.com/$author/$name/archive/master.tar.gz"
 	! curl -Lsfo /dev/null "$url" && err "Invalid URL specified. Exiting."
 	dbg "Fetching archive."
-	curl -L -s -o "$MODULES_DIR/tmp.tar.gz" "$url"	
+	mkdir "$MODULES_DIR/tmp"
+	curl -Lso "$MODULES_DIR/tmp.tar.gz" "$url"	
 
 	# Check for curl success
 	[[ $? -ne 0 ]] && err "Failed to fetch archive from $url. Exiting."
 
-	# Prepare for extraction
-	mkdir "$MODULES_DIR/tmp"
-
 	# Extract
 	dbg "Extracting archive."
 	tar xf "$MODULES_DIR/tmp.tar.gz" -C "$MODULES_DIR/tmp"
-
+	
 	# Rename with mmm folder structure
 	dbg "Moving contents to mmm folder structure."
 	local dirname=`ls "$MODULES_DIR/tmp"`
-	mv "$MODULES_DIR/tmp/$dirname" "$MODULES_DIR"
-	mv "$MODULES_DIR/$dirname" "$MODULES_DIR/$author:$name"
-
-	# Cleanup
-	dbg "Cleaning up."
-	rm "$MODULES_DIR/tmp.tar.gz"
-	rm -rf "$MODULES_DIR/tmp"
+	cd "$MODULES_DIR/tmp/$dirname"
+	zip -r9 "$MODULES_DIR/tmp/repack.zip" .
 
 	# Customize script
 	dbg "Setting up environment for customize.sh."
-	. /data/adb/magisk/util_functions.sh
-	api_level_arch_detect
-	BOOTMODE="false"
-	MODPATH="$MODULES_DIR/$author:$name"
-	TMPDIR=/dev/tmp
-	ZIPFILE=
+	local ZIPFILE="$MODULES_DIR/tmp/repack.zip"
+	curl -Ls "https://raw.githubusercontent.com/topjohnwu/Magisk/master/scripts/module_installer.sh" | sh
 
-	dbg "Sourcing customize.sh."
-	[[ -f $MODPATH/customize.sh ]] && . "$MODPATH/customize.sh"
+	# Cleanup
+	dbg "Cleaning up."
+	rm -rf "$MODULES_DIR/tmp"
+	rm "$MODULES_DIR/tmp.tar.gz"
 
 	dbg "Installed $author:$name."
 }
